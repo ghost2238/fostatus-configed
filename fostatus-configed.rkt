@@ -24,6 +24,19 @@
   `(link ((rel "stylesheet") (href "style.css")))
   )
 
+(define (html_table_header elems)
+  `(,@(for/list ([x elems])
+    `(th ,x)))
+  )
+
+(html_table_header '("Test" "Hoho"))
+
+(define (html_table header rows)
+  `(table (thead ,@header) (tbody ,@rows))
+)
+
+;(html_table (html_table_header '("Test" "Hoho"))
+
 (define html_server_list (map (lambda (x) `(li ,x)) names))
 
 (include_css "test.css")
@@ -33,7 +46,7 @@
    `(html (head (title "FOStatus Config-ed")
                 ,(include_css "style.css")) 
           (body (div ((id "content")) (p ((style "margin-left: 45px")) "Woohoo!")
-                      (ol ,@(for/list ([server html_server_list])`,server ))
+                      (ol ,@html_server_list)
                           ) ))
                      ))
 
