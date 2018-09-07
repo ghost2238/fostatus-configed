@@ -35,9 +35,8 @@
   `(table (thead ,@header) (tbody ,@rows))
 )
 
-;(html_table (html_table_header '("Test" "Hoho"))
-
-(define html_server_list (map (lambda (x) `(li ,x)) names))
+(define server_links (map (lambda (x) `(a (( href ,(format "/server/~a" x)  ) (style "color: #8e9eae") ) ,x)) names))
+(define html_server_list (map (lambda (x) `(li ,x)) server_links))
 
 (include_css "test.css")
 
@@ -45,14 +44,12 @@
   (response/xexpr
    `(html (head (title "FOStatus Config-ed")
                 ,(include_css "style.css")) 
-          (body (div ((id "content")) (p ((style "margin-left: 45px")) "Woohoo!")
-                      (ol ,@html_server_list)
-                          ) ))
+          (body (div ((id "content"))
+                     (div ((style "margin: auto;color: #8c8c8c; width: 500px; border: solid 3px #222; background: #1f1f1f; font-size: 26px; padding: 32px;" ))  (p "Click on a server to edit config.")
+                      (ul ,@html_server_list)
+                          ) )))
                      ))
 
-;(xml->xexpr (document-element
-;               (read-xml (open-input-string
-;                          "<doc><p attr='abc' attr2='xyz'>test</p></doc>"))))
 
 (serve/servlet start
                #:port 1500
