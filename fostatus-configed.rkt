@@ -10,19 +10,34 @@
 ; Probably some nicer way to do this that I don't know about yet...
 (define all_servers (hash-ref (hash-ref (hash-ref servers 'fonline) 'config) 'server))
 
-; Get server names, convert to list of strings and sort in alphanumerical order
-(define names (sort (map ~a (hash-keys all_servers)) string<?))
-
-; Get a server property, or "" if it doesn't exist
+; Get a server from all_servers
 (define (server_get server)
-  (hash-ref all_servers (string->symbol server))
+  (hash-ref all_servers server)
   )
-
-
 (define (server_key server key)
   (hash-ref (server_get server) key ""))
 (define (server_key_exists server key)
   (hash-has-key? (server_get server) key))
+
+; Make pair where server key (used for access the all_servers hash) is the first and second value is the string, later used for sorting.
+; (server_key, output_of_proc)
+(define (server_key_pair proc)
+  (map (lambda (x) (list x (proc x) )) (hash-keys all_servers))
+  )
+
+(define (server_attr_pair attr)
+  (server_key_pair (lambda (x) (server_key x attr)) )
+  )
+
+
+; Get list of server keys by sorted by some property, e.g 'name
+(define (server_keys_by_sorted_attr attr)
+  (map (lambda (x) (first x)) (sort (server_attr_pair attr) string<? #:key (lambda (x) (last x))))
+  )
+
+(define server_keys (server_keys_by_sorted_attr 'name))
+
+
 ; Helpers to get all properties from server x
 (define (server_name server)(server_key server 'name))
 (define (server_host server)(server_key server 'host))
@@ -32,10 +47,26 @@
 (define (server_irc server)(server_key server 'irc))
 (define (server_color server)(server_key server 'color))
 
+(define (server_fmt_attr server input expr attr)
+  (string-replace input expr (~a (server_key server attr))))
+
+(define (server_fmt server fmt)
+  (let ([res fmt])
+      (set! res (string-replace res "%key" (~a server)) )
+      (set! res (server_fmt_attr server res "%host" 'host))
+      (set! res (server_fmt_attr server res "%port" 'port))
+      (set! res (server_fmt_attr server res "%irc" 'irc))
+      (set! res (server_fmt_attr server res "%link" 'link))
+    res
+  )
+)
+
+;(map (lambda (x) (writeln (server_fmt x "%key -- %host:%port"))) server_keys)
+
 ; host:port or ""
 (define (server_addr server)
   (if (server_key_exists server 'host)
-      (format "~a:~a" (server_host server) (server_port server))
+      (server_fmt server "%host:%port")
       ""
   )
  )
@@ -71,18 +102,13 @@
   )
 )
 
-;(define x (server_attrs "aftertimes"))
-;x
-
-(define server_rows (map (lambda (x) `,(html_table_row `,(server_attrs x))) names))
-server_rows
+(define server_rows (map (lambda (x) `,(html_table_row `,(server_attrs x))) server_keys))
 
 (define server_table (html_table
                               (html_table_header '("Name" "IP:Port", "Website"))
                               server_rows
   ))
 
-server_table
 
 (define (start req)
   (response/xexpr
