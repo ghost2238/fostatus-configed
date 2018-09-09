@@ -5,7 +5,20 @@ html, body {
 	background: #333;
 	}
     
+a {
+	color: #8e9eae;
+}
 
+h1 {
+	position: absolute;
+	margin-left: -1000em;
+}
+
+input {
+	padding: 3px;
+	padding-left: 5px;
+}
+	
 body p {
 	color: #8C8C8C;
 }
@@ -18,9 +31,7 @@ header {
 	box-sizing: border-box;
 }
 
-a {
-	color: #8e9eae;
-}
+
 
 #edit-area {
 	margin: auto;
@@ -79,18 +90,4 @@ a {
 	padding: 0; 
 	box-sizing: border-box;
 }
-
-ul {
-	margin: 0 15px 15px 15px;
-	padding: 0;
-	}
 		
-h1 {
-	position: absolute;
-	margin-left: -1000em;
-	}
-.navtop {
-	padding: 0;
-	color: #7c7c7c;
-	text-align: center;
-	}
