@@ -43,14 +43,15 @@
 
 
 ; Helpers to get all properties from server x
-(define (server_name server)   (server_key server 'name))
-(define (server_host server)   (server_key server 'host))
-(define (server_port server)   (server_key server 'port))
-(define (server_web server)    (server_key server 'website))
-(define (server_link server)   (server_key server 'link))
-(define (server_irc server)    (server_key server 'irc))
-(define (server_closed server) (server_key server 'closed))
-(define (server_color server)  (server_key server 'color))
+(define (server_name server)    (server_key server 'name))
+(define (server_host server)    (server_key server 'host))
+(define (server_port server)    (server_key server 'port))
+(define (server_web server)     (server_key server 'website))
+(define (server_link server)    (server_key server 'link))
+(define (server_irc server)     (server_key server 'irc))
+(define (server_discord server) (server_key server 'discord)) 
+(define (server_closed server)  (server_key server 'closed))
+(define (server_color server)   (server_key server 'color))
 
 ; Web or link or ""
 (define (server_external server)
@@ -144,10 +145,6 @@
       )
   )
 
-;checkbox_checked #t
-;checkbox_checked #f
-;(server_closed 'arcanum)
-
 (define (show_server req server_sym)
    (define server (string->symbol server_sym))
    (send_response `(p ([style "text-align: center; font-size: 32px"]) ,(server_fmt server "Editing \"%name\" ")
@@ -157,13 +154,16 @@
                                ( tr ( td () "Port"    (td ( input ([style "width: 325px"] [type "text"] [name "port"] [value ,(~a (server_port server))] )))))
                                ( tr ( td () "Website" (td ( input ([style "width: 325px"] [type "text"] [name "website"] [value ,(~a (server_web server))] )))))
                                ( tr ( td () "Link"    (td ( input ([style "width: 325px"] [type "text"] [name "link"] [value ,(~a (server_link server))] )))))
+                               ( tr ( td () "Discord" (td ( input ([style "width: 325px"] [type "text"] [name "discord"] [value ,(~a (server_discord server))] )))))
                                ( tr ( td () "IRC"     (td ( input ([style "width: 325px"] [type "text"] [name "irc"] [value ,(~a (server_irc server))] )))))
-                               ( tr ( td () "Closed"  (td ( input ([style "width: 15px"]  [type "checkbox"] [name "closed"] ,(checkbox_checked (server_closed server))  ) ) )))))
+                               ( tr ( td () "Closed"  (td ( input ([style "width: 15px"]  [type "checkbox"] [name "closed"] ,(checkbox_checked (server_closed server))  ) ) ))))
+                       )
+                       ( input ([type "submit"] [style "margin-top: 20px; margin-left: 20px; width: 100px;"] [value "Save"] ))
+                       ( input ([type "hidden"] [name "server"] [value ,server_sym] ))
+                       )
+                          
                        
-                       
-                       ) ( input ([type "submit"] [style "margin-top: 20px; margin-left: 20px; width: 100px;"] [value "Save"] ))
-                         ( input ([type "hidden"] [name "server"] [value ,server_sym] ))
-                         )
+                    )
                    )
     )
 
@@ -187,17 +187,24 @@
   )
 )
 
+
+
 (define (save_server req)
   (save_server_var req 'name #f)
   (save_server_var req 'host #f)
   (save_server_var req 'port #t)
   (save_server_var req 'website #f)
+  (save_server_var req 'discord #f)
   (save_server_var req 'link #f)
   (save_server_var req 'irc #f)
   (if (eq? (exb req 'closed) #f)
-   (server_set_attr (string->symbol (erb req 'server)) 'closed true)
    (server_set_attr (string->symbol (erb req 'server)) 'closed false)
+   (server_set_attr (string->symbol (erb req 'server)) 'closed true)
    )
+
+  (define out (open-output-file "servers2.json" #:mode 'text #:exists 'replace))
+  (write-json servers out)
+  (close-output-port out)
   (show_server req (erb req 'server))
 )
 
